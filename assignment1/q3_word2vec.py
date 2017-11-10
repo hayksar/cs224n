@@ -188,8 +188,20 @@ def cbow(currentWord, C, contextWords, tokens, inputVectors, outputVectors,
     gradIn = np.zeros(inputVectors.shape)
     gradOut = np.zeros(outputVectors.shape)
 
+    predicted = np.zeros(inputVectors.shape[1])
+    count_rep_context_words = [0] * inputVectors.shape[0]
+    context_indices = set()
     ### YOUR CODE HERE
-    #raise NotImplementedError
+    for w in contextWords:
+        context_indices.add(tokens[w])
+        count_rep_context_words[tokens[w]] += 1
+    for i in context_indices:
+        predicted += inputVectors[i] * count_rep_context_words[i]
+        
+    target = tokens[currentWord]
+    cost, gradIn_i, gradOut = word2vecCostAndGradient(predicted, target, outputVectors, dataset)
+    for i in context_indices:
+        gradIn[i,:] = gradIn_i * count_rep_context_words[i]
     ### END YOUR CODE
 
     return cost, gradIn, gradOut
