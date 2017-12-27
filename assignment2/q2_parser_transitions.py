@@ -1,3 +1,4 @@
+import copy
 class PartialParse(object):
     def __init__(self, sentence):
         """Initializes this partial parse.
@@ -76,8 +77,37 @@ def minibatch_parse(sentences, model, batch_size):
     """
 
     ### YOUR CODE HERE
-    ### END YOUR CODE
+    # First get all the transitions
+    partial_parses = [None] * len(sentences)
+    for i, sentence in enumerate(sentences):
+        partial_parses[i] = PartialParse(sentence)
+    unfinished_parses = copy.deepcopy(partial_parses)
+    dependencies = list()
+    for i in range(0,len(sentences)):
+        dependencies.append( list() )
+    count = 0
+    list_trans = list()
+    for i in range(0,len(sentences)):
+        list_trans.append( list() )
+    while unfinished_parses:
+        minibatch = unfinished_parses[:batch_size]
+        fin_minibatch = [True]*len(minibatch)
+        while any(fin_minibatch):
+            for i, partial_parse in enumerate(minibatch):
+                if (len(partial_parse.stack) == 1) and (len(partial_parse.buffer) == 0):
+                    fin_minibatch[i] = False
+                else:
+                    transitions = model.predict([partial_parse])
+                    partial_parse.parse_step(transitions[0])
+                    list_trans[count * batch_size + i].append(transitions[0])
+        count += 1
+        del unfinished_parses[:batch_size]
 
+    # Use the transitions to get the dependencies
+    for i, trans in enumerate(list_trans):
+        dependencies[i] = partial_parses[i].parse(trans)
+
+    ### END YOUR CODE
     return dependencies
 
 
