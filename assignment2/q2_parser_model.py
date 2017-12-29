@@ -56,7 +56,7 @@ class ParserModel(Model):
         ### YOUR CODE HERE
         self.input_placeholder = tf.placeholder(tf.int32, (None, self.config.n_features))
         self.labels_placeholder = tf.placeholder(tf.float32, (None, self.config.n_classes))
-        self.dropout_placeholder = tf.placeholder(tf.float32, (1))
+        self.dropout_placeholder = tf.placeholder(tf.float32, ())
         ### END YOUR CODE
 
     def create_feed_dict(self, inputs_batch, labels_batch=None, dropout=1):
@@ -82,6 +82,13 @@ class ParserModel(Model):
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
         ### YOUR CODE HERE
+        if labels_batch != None:
+            feed_dict = {self.input_placeholder: inputs_batch,
+                         self.labels_placeholder: labels_batch,
+                         self.dropout_placeholder: dropout}
+        else:
+            feed_dict = {self.input_placeholder: inputs_batch,
+                         self.dropout_placeholder: dropout}
         ### END YOUR CODE
         return feed_dict
 
@@ -103,6 +110,9 @@ class ParserModel(Model):
             embeddings: tf.Tensor of shape (None, n_features*embed_size)
         """
         ### YOUR CODE HERE
+        pretrained_embeddings = tf.constant(self.pretrained_embeddings)
+        embeddings = tf.nn.embedding_lookup(pretrained_embeddings, self.input_placeholder)
+        embeddings = tf.reshape(embeddings, [tf.shape(embeddings)[0],-1])
         ### END YOUR CODE
         return embeddings
 
@@ -133,6 +143,24 @@ class ParserModel(Model):
 
         x = self.add_embedding()
         ### YOUR CODE HERE
+        n_features = self.config.n_features
+        embed_size = self.config.embed_size
+        hidden_size = self.config.hidden_size
+        n_classes = self.config.n_classes
+
+        # define and initialize the variabes
+        W = tf.get_variable("W", [n_features*embed_size, hidden_size],
+                            initializer = xavier_weight_init())
+        b1 = tf.get_variable("b1", [hidden_size,],
+                            initializer = tf.zeros_initializer())
+        U = tf.get_variable("U", [hidden_size, n_classes],
+                            initializer = xavier_weight_init())
+        b2 = tf.get_variable("b2", [n_classes,],
+                            initializer = tf.zeros_initializer())
+
+        h = tf.nn.relu(tf.matmul(x, W) + b1)
+        h_drop = tf.nn.dropout(h, self.dropout_placeholder)
+        pred = tf.matmul(h_drop, U) + b2
         ### END YOUR CODE
         return pred
 
