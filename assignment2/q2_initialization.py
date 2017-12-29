@@ -26,7 +26,7 @@ def xavier_weight_init():
         """
         ### YOUR CODE HERE
         denom = np.sum(shape)
-        epsilon = np.sqrt(6) / denom
+        epsilon = np.sqrt(6) / np.sqrt(denom)
         out = tf.random_uniform(shape,-epsilon,epsilon,tf.float32)
         ### END YOUR CODE
         return out
