@@ -82,7 +82,7 @@ class ParserModel(Model):
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
         ### YOUR CODE HERE
-        if labels_batch != None:
+        if labels_batch is not None:
             feed_dict = {self.input_placeholder: inputs_batch,
                          self.labels_placeholder: labels_batch,
                          self.dropout_placeholder: dropout}
@@ -178,6 +178,10 @@ class ParserModel(Model):
             loss: A 0-d tensor (scalar)
         """
         ### YOUR CODE HERE
+        logits = pred
+        labels = self.labels_placeholder
+        loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                    labels = labels, logits = logits))
         ### END YOUR CODE
         return loss
 
@@ -201,6 +205,7 @@ class ParserModel(Model):
             train_op: The Op for training.
         """
         ### YOUR CODE HERE
+        train_op = tf.train.AdamOptimizer(self.config.lr).minimize(loss)
         ### END YOUR CODE
         return train_op
 
