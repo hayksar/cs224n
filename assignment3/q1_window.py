@@ -186,7 +186,7 @@ class WindowModel(NERModel):
         """
         ### YOUR CODE HERE (!3-5 lines)
 
-        pretrained_embeddings = tf.constant(self.pretrained_embeddings)
+        pretrained_embeddings = tf.Variable(self.pretrained_embeddings)
         embeddings = tf.nn.embedding_lookup(pretrained_embeddings, self.input_placeholder)
         embeddings = tf.reshape(embeddings, [tf.shape(embeddings)[0],-1])
 
